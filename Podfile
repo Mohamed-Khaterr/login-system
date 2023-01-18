@@ -6,5 +6,7 @@ target 'swift-login-system' do
   use_frameworks!
 
   # Pods for swift-login-system
-
+  pod 'FirebaseAuth'
+  pod 'FirebaseFirestore'
+  
 end
