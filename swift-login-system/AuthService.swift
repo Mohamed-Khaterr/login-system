@@ -71,7 +71,7 @@ class AuthService {
         }
     }
     
-    public func googleSignIn(credential: AuthCredential, completion: @escaping (Bool, Error?) -> Void){
+    public func otheProviderSignIn(credential: AuthCredential, completion: @escaping (Bool, Error?) -> Void){
         Auth.auth().signIn(with: credential) { authResult, error in
             if let error = error {
                 completion(false, error)
@@ -79,21 +79,17 @@ class AuthService {
             }
             
             guard
-                let user = authResult?.user,
-                let email = user.email,
-                let name = user.displayName
+                let user = authResult?.user
             else { return }
-            
-            print("In Credential user:", user)
             
             let db = Firestore.firestore()
             
             db.collection("users")
                 .document(user.uid)
                 .setData([
-                    "name": name,
-                    "username": name,
-                    "email": email
+                    "name": user.displayName ?? "No name found!",
+                    "username": user.displayName ?? "No username found!",
+                    "email": user.email ?? user.phoneNumber ?? "No email found!"
                 ]) { error in
                     if let error = error {
                         completion(false, error)

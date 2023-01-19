@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import FBSDKLoginKit
 import FacebookLogin
 import GoogleSignIn
 import FirebaseAuth
@@ -21,7 +22,7 @@ class LoginViewController: UIViewController {
     private let forgotPasswordButton = CustomButton(title: "Forgot Password?", fontSize: .small)
     private let signInButton = CustomButton(title: "Sign In", hasBackground: true, fontSize: .medium)
 //    private let facebookSignInButton = CustomButton(title: "Facebook", iconName: "facebookLogo", fontSize: .medium)
-    private let facebookSignInButton = FBLoginButton(frame: .zero, permissions: [.publicProfile])
+    private let facebookSignInButton = FBLoginButton()
 //    private let googleSignInButton = CustomButton(title: "Google", iconName: "googleLogo", fontSize: .medium)
     private let googleSignInButton = GIDSignInButton(frame: .zero)
     private let appleSignInButton = CustomButton(title: "Apple", iconName: "appleLogo", fontSize: .medium)
@@ -34,14 +35,14 @@ class LoginViewController: UIViewController {
         
         forgotPasswordButton.addTarget(self, action: #selector(forgotPasswordButtonPressed), for: .touchUpInside)
         signInButton.addTarget(self, action: #selector(signInButtonPressed), for: .touchUpInside)
-        facebookSignInButton.addTarget(self, action: #selector(facebookButtonPressed), for: .touchUpInside)
         googleSignInButton.addTarget(self, action: #selector(googleButtonPressed), for: .touchUpInside)
         appleSignInButton.addTarget(self, action: #selector(appleButtonPressed), for: .touchUpInside)
         createAccountButton.addTarget(self, action: #selector(createAccountButtonPressed), for: .touchUpInside)
         
-        if let accessToken = AccessToken.current {
-            print("Token:", accessToken)
-        }
+        appleSignInButton.isHidden = true
+        
+        facebookSignInButton.permissions = ["public_profile", "email"]
+        facebookSignInButton.delegate = self
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -109,21 +110,21 @@ class LoginViewController: UIViewController {
             
             // Facebook Button
             facebookSignInButton.topAnchor.constraint(equalTo: signInButton.bottomAnchor, constant: 24),
-            facebookSignInButton.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.25),
-            facebookSignInButton.leadingAnchor.constraint(equalTo: signInButton.leadingAnchor),
-//            facebookSignInButton.heightAnchor.constraint(equalToConstant: 40),
+            facebookSignInButton.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.8),
+            facebookSignInButton.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
+//            facebookSignInButton.leadingAnchor.constraint(equalTo: signInButton.leadingAnchor),
             
             // Apple Button
-            appleSignInButton.topAnchor.constraint(equalTo: signInButton.bottomAnchor, constant: 18),
+            appleSignInButton.topAnchor.constraint(equalTo: googleSignInButton.bottomAnchor, constant: 18),
             appleSignInButton.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.25),
             appleSignInButton.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
             appleSignInButton.heightAnchor.constraint(equalToConstant: 40),
             
             // Google Button
-            googleSignInButton.topAnchor.constraint(equalTo: signInButton.bottomAnchor, constant: 18),
-            googleSignInButton.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.25),
-            googleSignInButton.trailingAnchor.constraint(equalTo: signInButton.trailingAnchor),
-//            googleSignInButton.heightAnchor.constraint(equalToConstant: 40),
+            googleSignInButton.topAnchor.constraint(equalTo: facebookSignInButton.bottomAnchor, constant: 18),
+            googleSignInButton.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.8),
+            googleSignInButton.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
+//            googleSignInButton.trailingAnchor.constraint(equalTo: signInButton.trailingAnchor),
             
             // CreateAccount Button
             createAccountButton.bottomAnchor.constraint(equalTo: self.view.layoutMarginsGuide.bottomAnchor, constant: -12),
@@ -167,10 +168,6 @@ class LoginViewController: UIViewController {
         }
     }
     
-    @objc private func facebookButtonPressed(){
-        print("facebookButtonPressed")
-    }
-    
     @objc private func appleButtonPressed(){
         print("appleButtonPressed")
     }
@@ -193,7 +190,7 @@ class LoginViewController: UIViewController {
             
             let credential = GoogleAuthProvider.credential(withIDToken: idToken.tokenString, accessToken: accessToken.tokenString)
             
-            AuthService.shared.googleSignIn(credential: credential) { success, error in
+            AuthService.shared.otheProviderSignIn(credential: credential) { success, error in
                 if let error = error {
                     print(error)
                     return
@@ -211,5 +208,36 @@ class LoginViewController: UIViewController {
     @objc private func createAccountButtonPressed(){
         let registerVC = RegisterViewController()
         self.navigationController?.pushViewController(registerVC, animated: true)
+    }
+}
+
+
+// MARK: - FacebookSignInButton Delegate
+extension LoginViewController: LoginButtonDelegate{
+    func loginButton(_ loginButton: FBLoginButton, didCompleteWith result: LoginManagerLoginResult?, error: Error?) {
+        if let error = error {
+            print("Facebook SignIn error:", error)
+            return
+        }
+        
+        guard let accessToken = result?.token else { return }
+        let credential = FacebookAuthProvider.credential(withAccessToken: accessToken.tokenString)
+        
+//        print(AccessToken.current)
+        AuthService.shared.otheProviderSignIn(credential: credential) { success, error in
+            if let error = error {
+                print(error)
+                return
+            }
+
+            if success {
+                if let sceneDelegate = self.view.window?.windowScene?.delegate as? SceneDelegate {
+                    sceneDelegate.goToRootVC()
+                }
+            }
+        }
+    }
+    
+    func loginButtonDidLogOut(_ loginButton: FBLoginButton) {
     }
 }
