@@ -6,6 +6,8 @@
 //
 
 import UIKit
+import FacebookCore
+import FacebookLogin
 
 class LoginViewController: UIViewController {
 
@@ -17,7 +19,8 @@ class LoginViewController: UIViewController {
     
     private let forgotPasswordButton = CustomButton(title: "Forgot Password?", fontSize: .small)
     private let signInButton = CustomButton(title: "Sign In", hasBackground: true, fontSize: .medium)
-    private let facebookSignInButton = CustomButton(title: "Facebook", iconName: "facebookLogo", fontSize: .medium)
+//    private let facebookSignInButton = CustomButton(title: "Facebook", iconName: "facebookLogo", fontSize: .medium)
+    private let facebookSignInButton = FBLoginButton(frame: .zero, permissions: [.publicProfile])
     private let googleSignInButton = CustomButton(title: "Google", iconName: "googleLogo", fontSize: .medium)
     private let appleSignInButton = CustomButton(title: "Apple", iconName: "appleLogo", fontSize: .medium)
     private let createAccountButton = CustomButton(title: "Don't have account? Create Account", fontSize: .small)
@@ -26,11 +29,6 @@ class LoginViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        navigationController?.navigationBar.isHidden = true
         
         forgotPasswordButton.addTarget(self, action: #selector(forgotPasswordButtonPressed), for: .touchUpInside)
         signInButton.addTarget(self, action: #selector(signInButtonPressed), for: .touchUpInside)
@@ -38,6 +36,15 @@ class LoginViewController: UIViewController {
         googleSignInButton.addTarget(self, action: #selector(googleButtonPressed), for: .touchUpInside)
         appleSignInButton.addTarget(self, action: #selector(appleButtonPressed), for: .touchUpInside)
         createAccountButton.addTarget(self, action: #selector(createAccountButtonPressed), for: .touchUpInside)
+        
+        if let accessToken = AccessToken.current {
+            print("Token:", accessToken)
+        }
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.navigationController?.navigationBar.isHidden = true
     }
     
     
@@ -71,54 +78,54 @@ class LoginViewController: UIViewController {
         
         NSLayoutConstraint.activate([
             // Header View
-            self.headerView.topAnchor.constraint(equalTo: self.view.layoutMarginsGuide.topAnchor, constant: 30),
-            self.headerView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
-            self.headerView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
-            self.headerView.heightAnchor.constraint(equalToConstant:    180),
+            headerView.topAnchor.constraint(equalTo: self.view.layoutMarginsGuide.topAnchor, constant: 30),
+            headerView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
+            headerView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
+            headerView.heightAnchor.constraint(equalToConstant: 180),
             
             // Email TextField
-            self.emailTextField.topAnchor.constraint(equalTo: self.headerView.bottomAnchor, constant: 16),
-            self.emailTextField.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
-            self.emailTextField.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.8),
-            self.emailTextField.heightAnchor.constraint(equalToConstant: 55),
+            emailTextField.topAnchor.constraint(equalTo: headerView.bottomAnchor, constant: 16),
+            emailTextField.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
+            emailTextField.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.8),
+            emailTextField.heightAnchor.constraint(equalToConstant: 55),
             
             // Password TextField
-            self.passwordTextField.topAnchor.constraint(equalTo: self.emailTextField.bottomAnchor, constant: 16),
-            self.passwordTextField.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
-            self.passwordTextField.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.8),
-            self.passwordTextField.heightAnchor.constraint(equalToConstant: 55),
+            passwordTextField.topAnchor.constraint(equalTo: emailTextField.bottomAnchor, constant: 16),
+            passwordTextField.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
+            passwordTextField.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.8),
+            passwordTextField.heightAnchor.constraint(equalToConstant: 55),
             
             // ForgotPassword Button
-            self.forgotPasswordButton.topAnchor.constraint(equalTo: self.passwordTextField.bottomAnchor),
-            self.forgotPasswordButton.trailingAnchor.constraint(equalTo: self.passwordTextField.trailingAnchor),
+            forgotPasswordButton.topAnchor.constraint(equalTo: passwordTextField.bottomAnchor),
+            forgotPasswordButton.trailingAnchor.constraint(equalTo: passwordTextField.trailingAnchor),
             
             // SignIn Button
-            self.signInButton.topAnchor.constraint(equalTo: self.forgotPasswordButton.bottomAnchor, constant: 24),
-            self.signInButton.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
-            self.signInButton.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.8),
-            self.signInButton.heightAnchor.constraint(equalToConstant: 55),
+            signInButton.topAnchor.constraint(equalTo: forgotPasswordButton.bottomAnchor, constant: 24),
+            signInButton.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
+            signInButton.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.8),
+            signInButton.heightAnchor.constraint(equalToConstant: 55),
             
             // Facebook Button
-            self.facebookSignInButton.topAnchor.constraint(equalTo: self.signInButton.bottomAnchor, constant: 16),
-            self.facebookSignInButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.25),
-            self.facebookSignInButton.leadingAnchor.constraint(equalTo: self.signInButton.leadingAnchor),
-            self.facebookSignInButton.heightAnchor.constraint(equalToConstant: 40),
-            
-            // Google Button
-            self.googleSignInButton.topAnchor.constraint(equalTo: self.signInButton.bottomAnchor, constant: 16),
-            self.googleSignInButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.25),
-            self.googleSignInButton.trailingAnchor.constraint(equalTo: self.signInButton.trailingAnchor),
-            self.googleSignInButton.heightAnchor.constraint(equalToConstant: 40),
+            facebookSignInButton.topAnchor.constraint(equalTo: signInButton.bottomAnchor, constant: 24),
+            facebookSignInButton.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.25),
+            facebookSignInButton.leadingAnchor.constraint(equalTo: signInButton.leadingAnchor),
+//            facebookSignInButton.heightAnchor.constraint(equalToConstant: 40),
             
             // Apple Button
-            self.appleSignInButton.topAnchor.constraint(equalTo: self.signInButton.bottomAnchor, constant: 16),
-            self.appleSignInButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.25),
-            self.appleSignInButton.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
-            self.appleSignInButton.heightAnchor.constraint(equalToConstant: 40),
+            appleSignInButton.topAnchor.constraint(equalTo: signInButton.bottomAnchor, constant: 18),
+            appleSignInButton.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.25),
+            appleSignInButton.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
+            appleSignInButton.heightAnchor.constraint(equalToConstant: 40),
+            
+            // Google Button
+            googleSignInButton.topAnchor.constraint(equalTo: signInButton.bottomAnchor, constant: 18),
+            googleSignInButton.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.25),
+            googleSignInButton.trailingAnchor.constraint(equalTo: signInButton.trailingAnchor),
+            googleSignInButton.heightAnchor.constraint(equalToConstant: 40),
             
             // CreateAccount Button
-            self.createAccountButton.topAnchor.constraint(equalTo: self.googleSignInButton.bottomAnchor, constant: 12),
-            self.createAccountButton.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
+            createAccountButton.bottomAnchor.constraint(equalTo: self.view.layoutMarginsGuide.bottomAnchor, constant: -12),
+            createAccountButton.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
         ])
     }
     
@@ -129,10 +136,33 @@ class LoginViewController: UIViewController {
     }
     
     @objc private func signInButtonPressed(){
-        let nav = UINavigationController(rootViewController: HomeViewController())
-        nav.modalPresentationStyle = .fullScreen
-        nav.modalTransitionStyle = .crossDissolve
-        self.present(nav, animated: true, completion: nil)
+        print("Sing In")
+        guard let email = emailTextField.text, !email.isEmpty,
+              let password = passwordTextField.text, !password.isEmpty
+        else {
+            AlertManager.show(to: self, withTitle: "Empty Field!", andMessage: "Please fill all fields,\nand Try Again.")
+            return
+        }
+        
+        let user = LoginUserRequest(email: email, password: password)
+        
+        // TODO: - Fix Loading Alert
+        //AlertManager.showAlertWithLoadingIndicator(to: self)
+        
+        AuthService.shared.singIn(with: user) { [weak self] error in
+            guard let self = self else { return }
+            
+            //AlertManager.hideAlertWithLoadingIndicator()
+            
+            if let error = error {
+                AlertManager.show(to: self, withTitle: "Sign In Error", andMessage: error.localizedDescription, returnKey: "Dismiss")
+                return
+            }
+            
+            if let sceneDelegate = self.view.window?.windowScene?.delegate as? SceneDelegate {
+                sceneDelegate.goToRootVC()
+            }
+        }
     }
     
     @objc private func facebookButtonPressed(){

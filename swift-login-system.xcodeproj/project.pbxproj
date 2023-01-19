@@ -21,6 +21,11 @@
 		01CEBD022977520B00974CA5 /* ForgotPasswordViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01CEBD012977520B00974CA5 /* ForgotPasswordViewController.swift */; };
 		01CEBD0429776EB800974CA5 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 01CEBD0329776EB800974CA5 /* GoogleService-Info.plist */; };
 		01CEBD0729777F2F00974CA5 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01CEBD0629777F2F00974CA5 /* AuthService.swift */; };
+		01CEBD0A2977832400974CA5 /* RegisterUserRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01CEBD092977832400974CA5 /* RegisterUserRequest.swift */; };
+		01CEBD0C2977892900974CA5 /* LoginUserRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01CEBD0B2977892900974CA5 /* LoginUserRequest.swift */; };
+		01DA4D582978B92500ED1BD8 /* Validator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01DA4D572978B92500ED1BD8 /* Validator.swift */; };
+		01DA4D5A2978C42800ED1BD8 /* AlertManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01DA4D592978C42800ED1BD8 /* AlertManager.swift */; };
+		01DA4D5C2978D64100ED1BD8 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01DA4D5B2978D64100ED1BD8 /* User.swift */; };
 		82D7AC0F1B14AF6438CA8931 /* Pods_swift_login_system.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 12F656B759D64A26BDCCECF4 /* Pods_swift_login_system.framework */; };
 /* End PBXBuildFile section */
 
@@ -41,6 +46,12 @@
 		01CEBD012977520B00974CA5 /* ForgotPasswordViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForgotPasswordViewController.swift; sourceTree = "<group>"; };
 		01CEBD0329776EB800974CA5 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		01CEBD0629777F2F00974CA5 /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
+		01CEBD092977832400974CA5 /* RegisterUserRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterUserRequest.swift; sourceTree = "<group>"; };
+		01CEBD0B2977892900974CA5 /* LoginUserRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginUserRequest.swift; sourceTree = "<group>"; };
+		01DA4D572978B92500ED1BD8 /* Validator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Validator.swift; sourceTree = "<group>"; };
+		01DA4D592978C42800ED1BD8 /* AlertManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertManager.swift; sourceTree = "<group>"; };
+		01DA4D5B2978D64100ED1BD8 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
+		01DA4D5D2978E6B000ED1BD8 /* swift-login-system.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "swift-login-system.entitlements"; sourceTree = "<group>"; };
 		12F656B759D64A26BDCCECF4 /* Pods_swift_login_system.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_swift_login_system.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B4332AD1BE50B89CBFA6BB4F /* Pods-swift-login-system.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-swift-login-system.debug.xcconfig"; path = "Target Support Files/Pods-swift-login-system/Pods-swift-login-system.debug.xcconfig"; sourceTree = "<group>"; };
 		BB37A7ACCF20E52A7508165C /* Pods-swift-login-system.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-swift-login-system.release.xcconfig"; path = "Target Support Files/Pods-swift-login-system/Pods-swift-login-system.release.xcconfig"; sourceTree = "<group>"; };
@@ -79,8 +90,12 @@
 		0117B70D297625730051F049 /* swift-login-system */ = {
 			isa = PBXGroup;
 			children = (
+				01DA4D5D2978E6B000ED1BD8 /* swift-login-system.entitlements */,
 				01CEBD0629777F2F00974CA5 /* AuthService.swift */,
+				01DA4D592978C42800ED1BD8 /* AlertManager.swift */,
+				01DA4D572978B92500ED1BD8 /* Validator.swift */,
 				0117B722297626040051F049 /* Resources */,
+				01CEBD082977831100974CA5 /* Model */,
 				0117B723297626380051F049 /* View */,
 				01CEBD0529777F1800974CA5 /* Controller */,
 				0117B71C297625740051F049 /* Info.plist */,
@@ -120,6 +135,16 @@
 				01CEBCFF2977405100974CA5 /* WebViewController.swift */,
 			);
 			path = Controller;
+			sourceTree = "<group>";
+		};
+		01CEBD082977831100974CA5 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				01CEBD092977832400974CA5 /* RegisterUserRequest.swift */,
+				01CEBD0B2977892900974CA5 /* LoginUserRequest.swift */,
+				01DA4D5B2978D64100ED1BD8 /* User.swift */,
+			);
+			path = Model;
 			sourceTree = "<group>";
 		};
 		80BF0A2CE20F9D4348A67199 /* Pods */ = {
@@ -256,13 +281,18 @@
 			files = (
 				0117B72D297638100051F049 /* CustomTextField.swift in Sources */,
 				01CEBD002977405100974CA5 /* WebViewController.swift in Sources */,
+				01DA4D5A2978C42800ED1BD8 /* AlertManager.swift in Sources */,
 				0117B725297627590051F049 /* LoginViewController.swift in Sources */,
+				01DA4D5C2978D64100ED1BD8 /* User.swift in Sources */,
 				0117B72B29762C810051F049 /* AuthHeaderView.swift in Sources */,
+				01DA4D582978B92500ED1BD8 /* Validator.swift in Sources */,
 				0117B727297627770051F049 /* RegisterViewController.swift in Sources */,
 				01CEBD0729777F2F00974CA5 /* AuthService.swift in Sources */,
 				0117B72F2976432D0051F049 /* CustomButton.swift in Sources */,
 				01CEBD022977520B00974CA5 /* ForgotPasswordViewController.swift in Sources */,
 				0117B70F297625730051F049 /* AppDelegate.swift in Sources */,
+				01CEBD0A2977832400974CA5 /* RegisterUserRequest.swift in Sources */,
+				01CEBD0C2977892900974CA5 /* LoginUserRequest.swift in Sources */,
 				0117B711297625730051F049 /* SceneDelegate.swift in Sources */,
 				0117B729297627DA0051F049 /* HomeViewController.swift in Sources */,
 			);
@@ -404,6 +434,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "swift-login-system/swift-login-system.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = R7KL845XH9;
@@ -434,6 +465,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "swift-login-system/swift-login-system.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = R7KL845XH9;

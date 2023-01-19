@@ -23,7 +23,16 @@ class HomeViewController: UIViewController {
         label.textColor = .label
         label.textAlignment = .center
         label.font = .systemFont(ofSize: 26, weight: .bold)
-        label.text = "Error"
+        label.text = "Loading..."
+        return label
+    }()
+    
+    private let usernameLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = .secondaryLabel
+        label.textAlignment = .center
+        label.font = .systemFont(ofSize: 18, weight: .bold)
+        label.text = "Loading..."
         return label
     }()
     
@@ -32,7 +41,7 @@ class HomeViewController: UIViewController {
         label.textColor = .secondaryLabel
         label.textAlignment = .center
         label.font = .systemFont(ofSize: 18, weight: .regular)
-        label.text = "Error"
+        label.text = "Loading..."
         return label
     }()
     
@@ -42,6 +51,22 @@ class HomeViewController: UIViewController {
         setupUI()
         
         // TODO: - Set Name & Email
+        AuthService.shared.fetchUser { [weak self] result in
+            guard let self = self else { return }
+            
+            switch result {
+            case .failure(let error):
+                print(error.localizedDescription)
+                AlertManager.show(to: self, withTitle: "User Info", andMessage: error.localizedDescription, returnKey: "Dismiss")
+                
+            case .success(let user):
+                DispatchQueue.main.async {
+                    self.nameLabel.text = user.name
+                    self.usernameLabel.text = user.username
+                    self.emailLabel.text = user.email
+                }
+            }
+        }
     }
     
     
@@ -49,15 +74,16 @@ class HomeViewController: UIViewController {
     private func setupUI(){
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Sign Out", style: .plain, target: self, action: #selector(logoutButtonPressed))
         self.navigationController?.navigationBar.isHidden = false
-        self.navigationController?.navigationBar.backgroundColor = .secondarySystemBackground
         self.view.backgroundColor = .systemBackground
         
         self.view.addSubview(logoImageView)
         self.view.addSubview(nameLabel)
+        self.view.addSubview(usernameLabel)
         self.view.addSubview(emailLabel)
         
         logoImageView.translatesAutoresizingMaskIntoConstraints = false
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
+        usernameLabel.translatesAutoresizingMaskIntoConstraints = false
         emailLabel.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
@@ -69,7 +95,10 @@ class HomeViewController: UIViewController {
             nameLabel.topAnchor.constraint(equalTo: logoImageView.bottomAnchor, constant: 16),
             nameLabel.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
             
-            emailLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 8),
+            usernameLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 8),
+            usernameLabel.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
+            
+            emailLabel.topAnchor.constraint(equalTo: usernameLabel.bottomAnchor, constant: 8),
             emailLabel.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
         ])
     }
@@ -77,7 +106,14 @@ class HomeViewController: UIViewController {
     
     // MARK: - Sections
     @objc private func logoutButtonPressed(){
-        // TODO: - Logout from Firebase
-        self.dismiss(animated: true, completion: nil)
+        AuthService.shared.singOut { [weak self] error in
+            if let error = error {
+                print(error.localizedDescription)
+            }else {
+                if let sceneDelegate = self?.view.window?.windowScene?.delegate as? SceneDelegate {
+                    sceneDelegate.goToRootVC()
+                }
+            }
+        }
     }
 }

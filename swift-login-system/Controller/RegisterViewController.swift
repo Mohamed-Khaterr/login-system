@@ -120,12 +120,12 @@ class RegisterViewController: UIViewController {
             signUpButton.heightAnchor.constraint(equalToConstant: 55),
             
             // Terms TextView
-            termsTextView.topAnchor.constraint(equalTo: signUpButton.bottomAnchor),
+            termsTextView.topAnchor.constraint(equalTo: signUpButton.bottomAnchor, constant: 24),
             termsTextView.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
             termsTextView.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.8),
             
             // SignIn Button
-            signInButton.topAnchor.constraint(equalTo: termsTextView.bottomAnchor, constant: 12),
+            signInButton.bottomAnchor.constraint(equalTo: self.view.layoutMarginsGuide.bottomAnchor, constant: -12),
             signInButton.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
         ])
     }
@@ -133,10 +133,58 @@ class RegisterViewController: UIViewController {
     
     // MARK: - Selectors
     @objc private func signUpButtonPressed(){
-        let nav = UINavigationController(rootViewController: HomeViewController())
-        nav.modalPresentationStyle = .fullScreen
-        nav.modalTransitionStyle = .crossDissolve
-        self.present(nav, animated: true, completion: nil)
+        guard let name = nameTextField.text, !name.isEmpty,
+              let username = usernameTextField.text, !username.isEmpty,
+              let email = emailTextField.text, !email.isEmpty,
+              let password = passwordTextField.text, !password.isEmpty
+        else {
+            AlertManager.show(to: self, withTitle: "Empty Field!", andMessage: "Please fill all fields,\nand Try Again.")
+            return
+        }
+        
+        // Username Check
+        if !Validator.isValidUsername(for: username){
+            AlertManager.show(to: self, withTitle: "Invalid Username", andMessage: "Username is not valid,\nTry Again.")
+            return
+        }
+        
+        // Email Check
+        if !Validator.isValidEmail(for: email){
+            AlertManager.show(to: self, withTitle: "Invalid Email", andMessage: "Email is not valid,\nTry Again.")
+            return
+        }
+        
+        // Password Check
+        if !Validator.isPasswordValid(for: password) {
+            AlertManager.show(to: self,
+                              withTitle: "Invalid Password",
+                              andMessage: """
+                                  Password is not valid.\n
+                                  Make sure that the password contains:\n
+                                  Minimum 8 characters at least.\n
+                                  1 Alphabet.\n
+                                  1 Number.\n
+                                  1 Special Character.
+                                """)
+            return
+        }
+        
+        let registerUser = RegisterUserRequest(name: name, username: username, email: email, password: password)
+        
+        AuthService.shared.registerUser(with: registerUser) { [weak self] success, error in
+            guard let self = self else { return }
+            
+            if let error = error {
+                AlertManager.show(to: self, withTitle: "Server Error!", andMessage: error.localizedDescription)
+                return
+            }
+
+            if success {
+                if let sceneDelegate = self.view.window?.windowScene?.delegate as? SceneDelegate {
+                    sceneDelegate.goToRootVC()
+                }
+            }
+        }
     }
     
     @objc private func signInButtonPressed(){

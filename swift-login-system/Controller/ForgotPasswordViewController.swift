@@ -62,26 +62,46 @@ class ForgotPasswordViewController: UIViewController {
             emailTextField.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.85),
             emailTextField.heightAnchor.constraint(equalToConstant: 55),
             
+            // Message Label
+            messageLabel.topAnchor.constraint(equalTo: emailTextField.bottomAnchor, constant: 16),
+            messageLabel.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
+            messageLabel.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.85),
+            
             // Reset Button
             resetButton.topAnchor.constraint(equalTo: emailTextField.bottomAnchor, constant: 24),
             resetButton.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
             resetButton.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.85),
             resetButton.heightAnchor.constraint(equalToConstant: 55),
-            
-            // Message Label
-            messageLabel.topAnchor.constraint(equalTo: resetButton.bottomAnchor, constant: 16),
-            messageLabel.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
-            messageLabel.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.85),
         ])
     }
     
     
     // MARK: - Sections
     @objc func resetButtonPressed(){
-        guard let email = emailTextField.text, !email.isEmpty else { return }
+        guard let email = emailTextField.text, Validator.isValidEmail(for: email) else {
+            AlertManager.show(to: self, withTitle: "Invalid Email", andMessage: "Email is not valid,\nTry again with valid email.", returnKey: "OK")
+            return
+        }
         
-        // TODO: - Email Validation
-        
-        messageLabel.isHidden = false
+        AuthService.shared.forgotPassword(withEmail: email) { [weak self] error in
+            guard let self = self else { return }
+
+            if let error = error {
+                AlertManager.show(to: self, withTitle: "Forgot Password", andMessage: error.localizedDescription, returnKey: "Dismiss")
+                return
+            }
+
+            DispatchQueue.main.async {
+                self.messageLabel.layer.opacity = 0
+                UIView.animate(withDuration: 0.5) {
+                    self.messageLabel.isHidden = false
+                    self.resetButton.transform.ty = self.messageLabel.frame.size.height + 24
+                } completion: { _ in
+                    UIView.animate(withDuration: 0.35) {
+                        self.messageLabel.layer.opacity = 1
+                    }
+                }
+            }
+        }
     }
 }
