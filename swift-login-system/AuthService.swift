@@ -5,9 +5,10 @@
 //  Created by Khater on 1/18/23.
 //
 
-import Foundation
 import FirebaseAuth
 import FirebaseFirestore
+import FirebaseCore
+import GoogleSignIn
 
 
 // MARK: - Documentaion shortcut Mac(cmd + option + /), VMware(window + alt + /)
@@ -67,6 +68,40 @@ class AuthService {
         
         Auth.auth().signIn(withEmail: email, password: password) { _ , error in
             completion(error)
+        }
+    }
+    
+    public func googleSignIn(credential: AuthCredential, completion: @escaping (Bool, Error?) -> Void){
+        Auth.auth().signIn(with: credential) { authResult, error in
+            if let error = error {
+                completion(false, error)
+                return
+            }
+            
+            guard
+                let user = authResult?.user,
+                let email = user.email,
+                let name = user.displayName
+            else { return }
+            
+            print("In Credential user:", user)
+            
+            let db = Firestore.firestore()
+            
+            db.collection("users")
+                .document(user.uid)
+                .setData([
+                    "name": name,
+                    "username": name,
+                    "email": email
+                ]) { error in
+                    if let error = error {
+                        completion(false, error)
+                        return
+                    }
+                    
+                    completion(true, nil)
+                }
         }
     }
     

@@ -13,5 +13,8 @@ target 'swift-login-system' do
   # Facebook SDK
   pod 'FacebookCore'
   pod 'FacebookLogin'
+
+  # Google SDK
+  pod 'GoogleSignIn'
   
 end

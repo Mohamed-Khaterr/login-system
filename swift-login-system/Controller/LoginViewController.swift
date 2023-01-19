@@ -6,8 +6,9 @@
 //
 
 import UIKit
-import FacebookCore
 import FacebookLogin
+import GoogleSignIn
+import FirebaseAuth
 
 class LoginViewController: UIViewController {
 
@@ -21,7 +22,8 @@ class LoginViewController: UIViewController {
     private let signInButton = CustomButton(title: "Sign In", hasBackground: true, fontSize: .medium)
 //    private let facebookSignInButton = CustomButton(title: "Facebook", iconName: "facebookLogo", fontSize: .medium)
     private let facebookSignInButton = FBLoginButton(frame: .zero, permissions: [.publicProfile])
-    private let googleSignInButton = CustomButton(title: "Google", iconName: "googleLogo", fontSize: .medium)
+//    private let googleSignInButton = CustomButton(title: "Google", iconName: "googleLogo", fontSize: .medium)
+    private let googleSignInButton = GIDSignInButton(frame: .zero)
     private let appleSignInButton = CustomButton(title: "Apple", iconName: "appleLogo", fontSize: .medium)
     private let createAccountButton = CustomButton(title: "Don't have account? Create Account", fontSize: .small)
     
@@ -121,7 +123,7 @@ class LoginViewController: UIViewController {
             googleSignInButton.topAnchor.constraint(equalTo: signInButton.bottomAnchor, constant: 18),
             googleSignInButton.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.25),
             googleSignInButton.trailingAnchor.constraint(equalTo: signInButton.trailingAnchor),
-            googleSignInButton.heightAnchor.constraint(equalToConstant: 40),
+//            googleSignInButton.heightAnchor.constraint(equalToConstant: 40),
             
             // CreateAccount Button
             createAccountButton.bottomAnchor.constraint(equalTo: self.view.layoutMarginsGuide.bottomAnchor, constant: -12),
@@ -174,7 +176,36 @@ class LoginViewController: UIViewController {
     }
     
     @objc private func googleButtonPressed(){
-        print("googleButtonPressed")
+        GIDSignIn.sharedInstance.signIn(withPresenting: self) { [weak self] signInResult, error in
+            guard let self = self else { return }
+            
+            if let error = error {
+                print("Google Sign In error:", error.localizedDescription)
+                return
+            }
+            
+            guard
+                let user = signInResult?.user,
+                let idToken = user.idToken
+            else { return }
+            
+            let accessToken = user.accessToken
+            
+            let credential = GoogleAuthProvider.credential(withIDToken: idToken.tokenString, accessToken: accessToken.tokenString)
+            
+            AuthService.shared.googleSignIn(credential: credential) { success, error in
+                if let error = error {
+                    print(error)
+                    return
+                }
+                
+                if success {
+                    if let sceneDelegate = self.view.window?.windowScene?.delegate as? SceneDelegate {
+                        sceneDelegate.goToRootVC()
+                    }
+                }
+            }
+        }
     }
     
     @objc private func createAccountButtonPressed(){
