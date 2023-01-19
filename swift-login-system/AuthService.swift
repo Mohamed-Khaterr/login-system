@@ -9,9 +9,10 @@ import FirebaseAuth
 import FirebaseFirestore
 import FirebaseCore
 import GoogleSignIn
+import FacebookLogin
 
 
-// MARK: - Documentaion shortcut Mac(cmd + option + /), VMware(window + alt + /)
+// MARK: Documentaion shortcut Mac(cmd + option + /), VMware(window + alt + /)
 
 class AuthService {
     public static let shared = AuthService()
@@ -107,6 +108,9 @@ class AuthService {
     public func singOut(completion: @escaping (Error?) -> Void){
         do {
             try Auth.auth().signOut()
+            if AccessToken.isCurrentAccessTokenActive {
+                LoginManager().logOut()
+            }
             completion(nil)
             
         } catch {
@@ -140,9 +144,10 @@ class AuthService {
                       let snapShotData = snapShot.data(),
                       let name = snapShotData["name"] as? String,
                       let username = snapShotData["username"] as? String,
-                      let email = snapShotData["email"] as? String,
-                      let profileImage = snapShot["photoURL"] as? String
+                      let email = snapShotData["email"] as? String
                 else { return }
+                
+                let profileImage = snapShot["photoURL"] as? String
                 
                 let user = User(uid: userUID, name: name, username: username, email: email, profileImageURLString: profileImage)
                 completion(.success(user))

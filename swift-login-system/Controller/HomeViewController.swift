@@ -19,6 +19,15 @@ class HomeViewController: UIViewController {
         return imageView
     }()
     
+    private let loadingIndicator: UIActivityIndicatorView = {
+        let activityIndicator = UIActivityIndicatorView()
+        activityIndicator.style = .medium
+        activityIndicator.hidesWhenStopped = true
+        activityIndicator.color = .white
+        activityIndicator.startAnimating()
+        return activityIndicator
+    }()
+    
     private let nameLabel: UILabel = {
         let label = UILabel()
         label.textColor = .label
@@ -51,6 +60,7 @@ class HomeViewController: UIViewController {
         super.viewDidLoad()
         setupUI()
         
+        
         // TODO: - Set Name & Email
         AuthService.shared.fetchUser { [weak self] result in
             guard let self = self else { return }
@@ -72,13 +82,18 @@ class HomeViewController: UIViewController {
                             print(error.localizedDescription)
                             return
                         }
-                        
+
                         guard let data = data else {return}
                         DispatchQueue.main.async {
                             self.profileImageView.image = UIImage(data: data)
                             self.profileImageView.layer.cornerRadius = self.profileImageView.frame.size.width / 2
+                            self.loadingIndicator.stopAnimating()
                         }
                     }.resume()
+                }else{
+                    DispatchQueue.main.async {
+                        self.loadingIndicator.stopAnimating()
+                    }
                 }
             }
         }
@@ -96,7 +111,10 @@ class HomeViewController: UIViewController {
         self.view.addSubview(usernameLabel)
         self.view.addSubview(emailLabel)
         
+        profileImageView.addSubview(loadingIndicator)
+        
         profileImageView.translatesAutoresizingMaskIntoConstraints = false
+        loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
         usernameLabel.translatesAutoresizingMaskIntoConstraints = false
         emailLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -106,6 +124,9 @@ class HomeViewController: UIViewController {
             profileImageView.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
             profileImageView.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.5),
             profileImageView.heightAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.5),
+            
+            loadingIndicator.centerXAnchor.constraint(equalTo: profileImageView.centerXAnchor),
+            loadingIndicator.centerYAnchor.constraint(equalTo: profileImageView.centerYAnchor),
             
             nameLabel.topAnchor.constraint(equalTo: profileImageView.bottomAnchor, constant: 16),
             nameLabel.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
