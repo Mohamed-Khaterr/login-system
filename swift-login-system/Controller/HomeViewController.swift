@@ -10,11 +10,12 @@ import UIKit
 class HomeViewController: UIViewController {
     
     // MARK: - UI Components
-    private let logoImageView: UIImageView = {
+    private let profileImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
         imageView.image = UIImage(named: "logo")
         imageView.tintColor = .clear
+        imageView.layer.masksToBounds = true
         return imageView
     }()
     
@@ -65,6 +66,20 @@ class HomeViewController: UIViewController {
                     self.usernameLabel.text = user.username
                     self.emailLabel.text = user.email
                 }
+                if let urlString = user.profileImageURLString, let url = URL(string: urlString){
+                    URLSession.shared.dataTask(with: url) {data, _, error in
+                        if let error = error {
+                            print(error.localizedDescription)
+                            return
+                        }
+                        
+                        guard let data = data else {return}
+                        DispatchQueue.main.async {
+                            self.profileImageView.image = UIImage(data: data)
+                            self.profileImageView.layer.cornerRadius = self.profileImageView.frame.size.width / 2
+                        }
+                    }.resume()
+                }
             }
         }
     }
@@ -76,23 +91,23 @@ class HomeViewController: UIViewController {
         self.navigationController?.navigationBar.isHidden = false
         self.view.backgroundColor = .systemBackground
         
-        self.view.addSubview(logoImageView)
+        self.view.addSubview(profileImageView)
         self.view.addSubview(nameLabel)
         self.view.addSubview(usernameLabel)
         self.view.addSubview(emailLabel)
         
-        logoImageView.translatesAutoresizingMaskIntoConstraints = false
+        profileImageView.translatesAutoresizingMaskIntoConstraints = false
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
         usernameLabel.translatesAutoresizingMaskIntoConstraints = false
         emailLabel.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            logoImageView.topAnchor.constraint(equalTo: self.view.layoutMarginsGuide.topAnchor, constant: 30),
-            logoImageView.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
-            logoImageView.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.5),
-            logoImageView.heightAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.5),
+            profileImageView.topAnchor.constraint(equalTo: self.view.layoutMarginsGuide.topAnchor, constant: 30),
+            profileImageView.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
+            profileImageView.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.5),
+            profileImageView.heightAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.5),
             
-            nameLabel.topAnchor.constraint(equalTo: logoImageView.bottomAnchor, constant: 16),
+            nameLabel.topAnchor.constraint(equalTo: profileImageView.bottomAnchor, constant: 16),
             nameLabel.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
             
             usernameLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 8),

@@ -13,4 +13,5 @@ struct User {
     let name: String
     let username: String
     let email: String
+    let profileImageURLString: String?
 }

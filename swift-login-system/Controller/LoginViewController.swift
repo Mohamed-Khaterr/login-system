@@ -21,9 +21,7 @@ class LoginViewController: UIViewController {
     
     private let forgotPasswordButton = CustomButton(title: "Forgot Password?", fontSize: .small)
     private let signInButton = CustomButton(title: "Sign In", hasBackground: true, fontSize: .medium)
-//    private let facebookSignInButton = CustomButton(title: "Facebook", iconName: "facebookLogo", fontSize: .medium)
     private let facebookSignInButton = FBLoginButton()
-//    private let googleSignInButton = CustomButton(title: "Google", iconName: "googleLogo", fontSize: .medium)
     private let googleSignInButton = GIDSignInButton(frame: .zero)
     private let appleSignInButton = CustomButton(title: "Apple", iconName: "appleLogo", fontSize: .medium)
     private let createAccountButton = CustomButton(title: "Don't have account? Create Account", fontSize: .small)
@@ -33,16 +31,16 @@ class LoginViewController: UIViewController {
         super.viewDidLoad()
         setupUI()
         
+        facebookSignInButton.permissions = ["email", "public_profile"]
+        facebookSignInButton.delegate = self
+        
+        appleSignInButton.isHidden = true
+        
         forgotPasswordButton.addTarget(self, action: #selector(forgotPasswordButtonPressed), for: .touchUpInside)
         signInButton.addTarget(self, action: #selector(signInButtonPressed), for: .touchUpInside)
         googleSignInButton.addTarget(self, action: #selector(googleButtonPressed), for: .touchUpInside)
         appleSignInButton.addTarget(self, action: #selector(appleButtonPressed), for: .touchUpInside)
         createAccountButton.addTarget(self, action: #selector(createAccountButtonPressed), for: .touchUpInside)
-        
-        appleSignInButton.isHidden = true
-        
-        facebookSignInButton.permissions = ["public_profile", "email"]
-        facebookSignInButton.delegate = self
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -112,7 +110,6 @@ class LoginViewController: UIViewController {
             facebookSignInButton.topAnchor.constraint(equalTo: signInButton.bottomAnchor, constant: 24),
             facebookSignInButton.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.8),
             facebookSignInButton.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
-//            facebookSignInButton.leadingAnchor.constraint(equalTo: signInButton.leadingAnchor),
             
             // Apple Button
             appleSignInButton.topAnchor.constraint(equalTo: googleSignInButton.bottomAnchor, constant: 18),
@@ -124,7 +121,6 @@ class LoginViewController: UIViewController {
             googleSignInButton.topAnchor.constraint(equalTo: facebookSignInButton.bottomAnchor, constant: 18),
             googleSignInButton.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.8),
             googleSignInButton.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
-//            googleSignInButton.trailingAnchor.constraint(equalTo: signInButton.trailingAnchor),
             
             // CreateAccount Button
             createAccountButton.bottomAnchor.constraint(equalTo: self.view.layoutMarginsGuide.bottomAnchor, constant: -12),
@@ -223,7 +219,6 @@ extension LoginViewController: LoginButtonDelegate{
         guard let accessToken = result?.token else { return }
         let credential = FacebookAuthProvider.credential(withAccessToken: accessToken.tokenString)
         
-//        print(AccessToken.current)
         AuthService.shared.otheProviderSignIn(credential: credential) { success, error in
             if let error = error {
                 print(error)

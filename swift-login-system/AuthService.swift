@@ -89,7 +89,9 @@ class AuthService {
                 .setData([
                     "name": user.displayName ?? "No name found!",
                     "username": user.displayName ?? "No username found!",
-                    "email": user.email ?? user.phoneNumber ?? "No email found!"
+                    "email": user.email ?? user.phoneNumber ?? "No email found!",
+                    "photoURL": user.photoURL?.absoluteString ?? "nil"
+                    
                 ]) { error in
                     if let error = error {
                         completion(false, error)
@@ -138,10 +140,11 @@ class AuthService {
                       let snapShotData = snapShot.data(),
                       let name = snapShotData["name"] as? String,
                       let username = snapShotData["username"] as? String,
-                      let email = snapShotData["email"] as? String
+                      let email = snapShotData["email"] as? String,
+                      let profileImage = snapShot["photoURL"] as? String
                 else { return }
                 
-                let user = User(uid: userUID, name: name, username: username, email: email)
+                let user = User(uid: userUID, name: name, username: username, email: email, profileImageURLString: profileImage)
                 completion(.success(user))
             }
     }
