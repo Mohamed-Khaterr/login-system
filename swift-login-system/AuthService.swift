@@ -20,6 +20,24 @@ class AuthService {
     // No one can create object from AuthServices
     private init(){}
     
+    private func insert(user: User, completion: @escaping (Error?) -> Void){
+        let db = Firestore.firestore()
+        
+        let data: [String: Any] = [
+            "name": user.name,
+            "username": user.username,
+            "email": user.email,
+            "profileImage": user.profileImageURLString ?? "",
+        ]
+        
+        db.collection("users").document(user.uid).setData(data) { error in
+            completion(error)
+            return
+        }
+        
+        completion(nil)
+    }
+    
     
     /// A method to register the user
     /// - Parameters:
@@ -27,13 +45,10 @@ class AuthService {
     ///   - completion: A completion with two values:
     ///     - Bool: wasRegister - Determines if the user was registered and saved in the database correctly
     ///     - Error?: An optional error from Firebase if it exists
-    public func registerUser(with userRequest: RegisterUserRequest, completion: @escaping (Bool, Error?) -> Void){
-        let name = userRequest.name
-        let username = userRequest.username
-        let email = userRequest.email
-        let password = userRequest.password
-        
-        Auth.auth().createUser(withEmail: email, password: password) { result, error in
+    public func registerUser(with user: RegisterUserRequest, completion: @escaping (Bool, Error?) -> Void){
+        Auth.auth().createUser(withEmail: user.email, password: user.password) { [weak self] result, error in
+            guard let self = self else { return }
+            
             if let error = error {
                 completion(false, error)
                 return
@@ -44,25 +59,22 @@ class AuthService {
                 return
             }
             
-            let db = Firestore.firestore()
-            
-            db.collection("users")
-                .document(resultUser.uid)
-                .setData([
-                    "name": name,
-                    "username": username,
-                    "email": email,
-                ]) { error in
-                    if let error = error {
-                        completion(false, error)
-                        return
-                    }
-                    
-                    completion(true, nil)
+            self.insert(user: User(uid: resultUser.uid, name: user.name, username: user.username, email: user.email, profileImageURLString: nil)) { error in
+                if let error = error {
+                    completion(false, error)
+                    return
                 }
+                completion(true, error)
+            }
         }
     }
     
+    
+    /// A method to Sign in the user with email and password
+    /// - Parameters:
+    ///   - userRequest: The user sign in information (email, password)
+    ///   - completion: A completion called when the Firebase response with one value:
+    ///     - error?: An optional error from Firebase.
     public func singIn(with userRequest: LoginUserRequest, completion: @escaping (Error?) -> Void){
         let email = userRequest.email
         let password = userRequest.password
@@ -72,6 +84,14 @@ class AuthService {
         }
     }
     
+    
+    
+    /// A method to Sign in the user with Social Media Providers
+    /// - Parameters:
+    ///   - credential: The credential made by Provider that contain user credential
+    ///   - completion: A completion called when the Firebase response with two values:
+    ///     - success: An Bool with true if there is data and false if there is no data.
+    ///     - error?: An optional Error from Firebase.
     public func otheProviderSignIn(credential: AuthCredential, completion: @escaping (Bool, Error?) -> Void){
         Auth.auth().signIn(with: credential) { authResult, error in
             if let error = error {
@@ -79,9 +99,10 @@ class AuthService {
                 return
             }
             
-            guard
-                let user = authResult?.user
-            else { return }
+            guard let user = authResult?.user else {
+                completion(false, nil)
+                return
+            }
             
             let db = Firestore.firestore()
             
@@ -105,12 +126,24 @@ class AuthService {
     }
     
     
+    /// A method for sign out user from Firebase and Soical Media Provider
+    /// - Parameters:
+    ///     - completion: A completion when it done signing out with one value:
+    ///         - error?: An optional error from Firebase
     public func singOut(completion: @escaping (Error?) -> Void){
         do {
             try Auth.auth().signOut()
+            
+            // Facebook
             if AccessToken.isCurrentAccessTokenActive {
                 LoginManager().logOut()
             }
+            
+            // Google
+            if GIDSignIn.sharedInstance.currentUser != nil {
+                GIDSignIn.sharedInstance.signOut()
+            }
+            
             completion(nil)
             
         } catch {
@@ -118,6 +151,8 @@ class AuthService {
         }
     }
     
+    /// A method to check if user is already signed in (from Firebase)
+    /// - Returns: true or false
     public func isUserSignedIn() -> Bool{
         return Auth.auth().currentUser != nil
     }

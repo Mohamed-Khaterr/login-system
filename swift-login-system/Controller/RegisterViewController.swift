@@ -17,8 +17,15 @@ class RegisterViewController: UIViewController {
     private let emailTextField = CustomTextField(textFieldType: .email)
     private let passwordTextField = CustomTextField(textFieldType: .password)
     
+    private let loadingIndicator: UIActivityIndicatorView = {
+        let activityIndicator = UIActivityIndicatorView()
+        activityIndicator.color = .label
+        activityIndicator.style = .medium
+        activityIndicator.hidesWhenStopped = true
+        return activityIndicator
+    }()
+    
     private let signUpButton = CustomButton(title: "Sign Up", hasBackground: true, fontSize: .medium)
-    private let signInButton = CustomButton(title: "Already have an account? Sign In", fontSize: .small)
     
     private let termsTextView: UITextView = {
         // Make text with Links
@@ -40,6 +47,8 @@ class RegisterViewController: UIViewController {
         
         return textView
     }()
+    
+    private let signInButton = CustomButton(title: "Already have an account? Sign In", fontSize: .small)
     
     // MARK: - LifeCycle
     override func viewDidLoad() {
@@ -66,6 +75,7 @@ class RegisterViewController: UIViewController {
         self.view.addSubview(usernameTextField)
         self.view.addSubview(emailTextField)
         self.view.addSubview(passwordTextField)
+        self.view.addSubview(loadingIndicator)
         self.view.addSubview(signUpButton)
         self.view.addSubview(termsTextView)
         self.view.addSubview(signInButton)
@@ -78,6 +88,7 @@ class RegisterViewController: UIViewController {
         usernameTextField.translatesAutoresizingMaskIntoConstraints = false
         emailTextField.translatesAutoresizingMaskIntoConstraints = false
         passwordTextField.translatesAutoresizingMaskIntoConstraints = false
+        loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
         signUpButton.translatesAutoresizingMaskIntoConstraints = false
         termsTextView.translatesAutoresizingMaskIntoConstraints = false
         signInButton.translatesAutoresizingMaskIntoConstraints = false
@@ -113,6 +124,10 @@ class RegisterViewController: UIViewController {
             passwordTextField.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.8),
             passwordTextField.heightAnchor.constraint(equalToConstant: 55),
             
+            // Loading Indicator
+            loadingIndicator.topAnchor.constraint(equalTo: passwordTextField.bottomAnchor, constant: 26),
+            loadingIndicator.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
+            
             // SignUp Button
             signUpButton.topAnchor.constraint(equalTo: passwordTextField.bottomAnchor, constant: 24),
             signUpButton.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
@@ -131,6 +146,34 @@ class RegisterViewController: UIViewController {
     }
     
     
+    private func enabaleViews(_ enable: Bool){
+        DispatchQueue.main.async {
+            self.nameTextField.isEnabled = enable
+            self.usernameTextField.isEnabled = enable
+            self.emailTextField.isEnabled = enable
+            self.passwordTextField.isEnabled = enable
+            
+            self.signUpButton.isEnabled = enable
+            self.signInButton.isEnabled = enable
+            
+            if !enable {
+                self.loadingIndicator.startAnimating()
+                UIView.animate(withDuration: 0.5) {
+                    self.signUpButton.transform.ty = 34
+                    self.termsTextView.transform.ty = 28
+                }
+            }else{
+                self.loadingIndicator.stopAnimating()
+                UIView.animate(withDuration: 0.3) {
+                    self.signUpButton.transform = .identity
+                    self.termsTextView.transform = .identity
+                }
+            }
+            
+        }
+    }
+    
+    
     // MARK: - Selectors
     @objc private func signUpButtonPressed(){
         guard let name = nameTextField.text, !name.isEmpty,
@@ -141,39 +184,34 @@ class RegisterViewController: UIViewController {
             AlertManager.show(to: self, withTitle: "Empty Field!", andMessage: "Please fill all fields,\nand Try Again.")
             return
         }
-        
+
         // Username Check
         if !Validator.isValidUsername(for: username){
             AlertManager.show(to: self, withTitle: "Invalid Username", andMessage: "Username is not valid,\nTry Again.")
             return
         }
-        
+
         // Email Check
         if !Validator.isValidEmail(for: email){
             AlertManager.show(to: self, withTitle: "Invalid Email", andMessage: "Email is not valid,\nTry Again.")
             return
         }
-        
+
         // Password Check
         if !Validator.isPasswordValid(for: password) {
             AlertManager.show(to: self,
                               withTitle: "Invalid Password",
-                              andMessage: """
-                                  Password is not valid.\n
-                                  Make sure that the password contains:\n
-                                  Minimum 8 characters at least.\n
-                                  1 Alphabet.\n
-                                  1 Number.\n
-                                  1 Special Character.
-                                """)
+                              andMessage: "Password is not valid.\nMake sure that the password contains:\nMinimum 8 characters at least.\n1 Alphabet.\n1 Number.\n1 Special Character.")
             return
         }
         
-        let registerUser = RegisterUserRequest(name: name, username: username, email: email, password: password)
-        
+        enabaleViews(false)
+        let registerUser = RegisterUserRequest(name: name, username: username.lowercased(), email: email.lowercased(), password: password)
+
         AuthService.shared.registerUser(with: registerUser) { [weak self] success, error in
             guard let self = self else { return }
-            
+            self.enabaleViews(true)
+
             if let error = error {
                 AlertManager.show(to: self, withTitle: "Server Error!", andMessage: error.localizedDescription)
                 return
@@ -183,6 +221,8 @@ class RegisterViewController: UIViewController {
                 if let sceneDelegate = self.view.window?.windowScene?.delegate as? SceneDelegate {
                     sceneDelegate.goToRootVC()
                 }
+            }else{
+                fatalError("False: register the user")
             }
         }
     }
