@@ -109,7 +109,6 @@
 			children = (
 				0117B70E297625730051F049 /* AppDelegate.swift */,
 				0117B710297625730051F049 /* SceneDelegate.swift */,
-				0117B719297625740051F049 /* LaunchScreen.storyboard */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -118,6 +117,7 @@
 			isa = PBXGroup;
 			children = (
 				0117B717297625740051F049 /* Assets.xcassets */,
+				0117B719297625740051F049 /* LaunchScreen.storyboard */,
 				0117B72A29762C810051F049 /* AuthHeaderView.swift */,
 				0117B72C297638100051F049 /* CustomTextField.swift */,
 				0117B72E2976432D0051F049 /* CustomButton.swift */,
