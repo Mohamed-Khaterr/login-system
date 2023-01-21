@@ -14,6 +14,11 @@ import FacebookLogin
 
 // MARK: Documentaion shortcut Mac(cmd + option + /), VMware(window + alt + /)
 
+enum AuthProvider {
+    case facebook(accessToken: String)
+    case google(idToken: String, accessToken: String)
+}
+
 class AuthService {
     public static let shared = AuthService()
     
@@ -75,7 +80,7 @@ class AuthService {
     ///   - userRequest: The user sign in information (email, password)
     ///   - completion: A completion called when the Firebase response with one value:
     ///     - error?: An optional error from Firebase.
-    public func singIn(with userRequest: LoginUserRequest, completion: @escaping (Error?) -> Void){
+    public func singIn(withUser userRequest: LoginUserRequest, completion: @escaping (Error?) -> Void){
         let email = userRequest.email
         let password = userRequest.password
         
@@ -85,15 +90,24 @@ class AuthService {
     }
     
     
-    
-    /// A method to Sign in the user with Social Media Providers
+    /// A method that Sign In user using Social Media Providers
     /// - Parameters:
-    ///   - credential: The credential made by Provider that contain user credential
-    ///   - completion: A completion called when the Firebase response with two values:
-    ///     - success: An Bool with true if there is data and false if there is no data.
-    ///     - error?: An optional Error from Firebase.
-    public func otheProviderSignIn(credential: AuthCredential, completion: @escaping (Bool, Error?) -> Void){
-        Auth.auth().signIn(with: credential) { authResult, error in
+    ///   - provider: Type of signin provider
+    ///   - completion: Callback function with two values:
+    ///     - isSignInSuccess: A bool of state of Sign In
+    ///     - error?: A optional error from Firebase
+    public func signIn(withProvidere provider: AuthProvider,completion: @escaping (Bool, Error?) -> Void){
+        let credential: AuthCredential!
+        switch provider {
+        case .facebook(let accessToken):
+            credential = FacebookAuthProvider.credential(withAccessToken: accessToken)
+            
+        case .google(let idToken, let accessToken):
+            credential = GoogleAuthProvider.credential(withIDToken: idToken, accessToken: accessToken)
+        }
+        
+        Auth.auth().signIn(with: credential) {[weak self] authResult, error in
+            guard let self = self else { return }
             if let error = error {
                 completion(false, error)
                 return
@@ -104,24 +118,19 @@ class AuthService {
                 return
             }
             
-            let db = Firestore.firestore()
+            let userInfo = User(uid: user.uid,
+                            name: user.displayName ?? "",
+                            username: user.displayName ?? "",
+                            email: user.email ?? user.phoneNumber ?? "",
+                            profileImageURLString: user.photoURL?.absoluteString ?? "")
             
-            db.collection("users")
-                .document(user.uid)
-                .setData([
-                    "name": user.displayName ?? "No name found!",
-                    "username": user.displayName ?? "No username found!",
-                    "email": user.email ?? user.phoneNumber ?? "No email found!",
-                    "photoURL": user.photoURL?.absoluteString ?? "nil"
-                    
-                ]) { error in
-                    if let error = error {
-                        completion(false, error)
-                        return
-                    }
-                    
-                    completion(true, nil)
+            self.insert(user: userInfo) { insertError in
+                if let insertError = insertError {
+                    completion(false, insertError)
+                    return
                 }
+                completion(true, nil)
+            }
         }
     }
     
@@ -140,7 +149,8 @@ class AuthService {
             }
             
             // Google
-            if GIDSignIn.sharedInstance.currentUser != nil {
+//            if GIDSignIn.sharedInstance.currentUser != nil {
+            if GIDSignIn.sharedInstance.hasPreviousSignIn(){
                 GIDSignIn.sharedInstance.signOut()
             }
             
@@ -152,7 +162,6 @@ class AuthService {
     }
     
     /// A method to check if user is already signed in (from Firebase)
-    /// - Returns: true or false
     public func isUserSignedIn() -> Bool{
         return Auth.auth().currentUser != nil
     }
