@@ -6,25 +6,28 @@
 //
 
 import UIKit
-import FBSDKLoginKit
 import FacebookLogin
 import GoogleSignIn
-import FirebaseAuth
 
 class LoginViewController: UIViewController {
 
     // MARK: - UI Components
     private let headerView = AuthHeaderView(title: "Sign In", subTitle: "Sign in to your account")
-    
     private let emailTextField = CustomTextField(textFieldType: .email)
     private let passwordTextField = CustomTextField(textFieldType: .password)
-    
     private let forgotPasswordButton = CustomButton(title: "Forgot Password?", fontSize: .small)
     private let signInButton = CustomButton(title: "Sign In", hasBackground: true, fontSize: .medium)
     private let facebookSignInButton = FBLoginButton()
     private let googleSignInButton = GIDSignInButton(frame: .zero)
-    private let appleSignInButton = CustomButton(title: "Apple", iconName: "appleLogo", fontSize: .medium)
     private let createAccountButton = CustomButton(title: "Don't have account? Create Account", fontSize: .small)
+    
+    private let loadingIndicator: UIActivityIndicatorView = {
+        let activityIndicator = UIActivityIndicatorView()
+        activityIndicator.color = .label
+        activityIndicator.style = .medium
+        activityIndicator.hidesWhenStopped = true
+        return activityIndicator
+    }()
     
     // MARK: - LifeCycle
     override func viewDidLoad() {
@@ -34,12 +37,10 @@ class LoginViewController: UIViewController {
         facebookSignInButton.permissions = ["email", "public_profile"]
         facebookSignInButton.delegate = self
         
-        appleSignInButton.isHidden = true
-        
         forgotPasswordButton.addTarget(self, action: #selector(forgotPasswordButtonPressed), for: .touchUpInside)
         signInButton.addTarget(self, action: #selector(signInButtonPressed), for: .touchUpInside)
+        facebookSignInButton.addTarget(self, action: #selector(facebookButtonPressed), for: .touchUpInside)
         googleSignInButton.addTarget(self, action: #selector(googleButtonPressed), for: .touchUpInside)
-        appleSignInButton.addTarget(self, action: #selector(appleButtonPressed), for: .touchUpInside)
         createAccountButton.addTarget(self, action: #selector(createAccountButtonPressed), for: .touchUpInside)
     }
     
@@ -58,10 +59,10 @@ class LoginViewController: UIViewController {
         self.view.addSubview(emailTextField)
         self.view.addSubview(passwordTextField)
         self.view.addSubview(forgotPasswordButton)
+        self.view.addSubview(loadingIndicator)
         self.view.addSubview(signInButton)
         self.view.addSubview(facebookSignInButton)
         self.view.addSubview(googleSignInButton)
-        self.view.addSubview(appleSignInButton)
         self.view.addSubview(createAccountButton)
         
         // translatesAutoresizingMaskIntoConstraints: to set my constraints
@@ -71,10 +72,10 @@ class LoginViewController: UIViewController {
         emailTextField.translatesAutoresizingMaskIntoConstraints = false
         passwordTextField.translatesAutoresizingMaskIntoConstraints = false
         forgotPasswordButton.translatesAutoresizingMaskIntoConstraints = false
+        loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
         signInButton.translatesAutoresizingMaskIntoConstraints = false
         facebookSignInButton.translatesAutoresizingMaskIntoConstraints = false
         googleSignInButton.translatesAutoresizingMaskIntoConstraints = false
-        appleSignInButton.translatesAutoresizingMaskIntoConstraints = false
         createAccountButton.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
@@ -100,6 +101,10 @@ class LoginViewController: UIViewController {
             forgotPasswordButton.topAnchor.constraint(equalTo: passwordTextField.bottomAnchor),
             forgotPasswordButton.trailingAnchor.constraint(equalTo: passwordTextField.trailingAnchor),
             
+            // Loading Indicator
+            loadingIndicator.topAnchor.constraint(equalTo: forgotPasswordButton.bottomAnchor, constant: 26),
+            loadingIndicator.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
+            
             // SignIn Button
             signInButton.topAnchor.constraint(equalTo: forgotPasswordButton.bottomAnchor, constant: 24),
             signInButton.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
@@ -110,12 +115,6 @@ class LoginViewController: UIViewController {
             facebookSignInButton.topAnchor.constraint(equalTo: signInButton.bottomAnchor, constant: 24),
             facebookSignInButton.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.8),
             facebookSignInButton.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
-            
-            // Apple Button
-            appleSignInButton.topAnchor.constraint(equalTo: googleSignInButton.bottomAnchor, constant: 18),
-            appleSignInButton.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.25),
-            appleSignInButton.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
-            appleSignInButton.heightAnchor.constraint(equalToConstant: 40),
             
             // Google Button
             googleSignInButton.topAnchor.constraint(equalTo: facebookSignInButton.bottomAnchor, constant: 18),
@@ -128,6 +127,36 @@ class LoginViewController: UIViewController {
         ])
     }
     
+    private func enabaleViews(_ enable: Bool){
+        DispatchQueue.main.async {
+            self.emailTextField.isEnabled = enable
+            self.passwordTextField.isEnabled = enable
+            self.forgotPasswordButton.isEnabled = enable
+            self.signInButton.isEnabled = enable
+            self.facebookSignInButton.isEnabled = enable
+            self.googleSignInButton.isEnabled = enable
+            self.createAccountButton.isEnabled = enable
+            
+            
+            if !enable {
+                self.loadingIndicator.startAnimating()
+                UIView.animate(withDuration: 0.5) {
+                    self.signInButton.transform.ty = 34
+                    self.facebookSignInButton.transform.ty = 28
+                    self.googleSignInButton.transform.ty = 28
+                }
+            }else{
+                self.loadingIndicator.stopAnimating()
+                UIView.animate(withDuration: 0.3) {
+                    self.signInButton.transform = .identity
+                    self.facebookSignInButton.transform = .identity
+                    self.googleSignInButton.transform = .identity
+                }
+            }
+            
+        }
+    }
+    
     
     // MARK: - Selectors
     @objc private func forgotPasswordButtonPressed(){
@@ -135,45 +164,51 @@ class LoginViewController: UIViewController {
     }
     
     @objc private func signInButtonPressed(){
-        print("Sing In")
         guard let email = emailTextField.text, !email.isEmpty,
               let password = passwordTextField.text, !password.isEmpty
         else {
-            AlertManager.show(to: self, withTitle: "Empty Field!", andMessage: "Please fill all fields,\nand Try Again.")
+            AlertManager.show(to: self, withTitle: "Sign In", andMessage: "Please fill all fields,\nand Try Again.")
             return
         }
         
-        let user = LoginUserRequest(email: email, password: password)
+        // Email Check
+        if !Validator.isValidEmail(for: email.lowercased()){
+            AlertManager.show(to: self, withTitle: "Invalid Email", andMessage: "Email is not valid,\nTry Again.")
+            return
+        }
         
-        // TODO: - Fix Loading Alert
-        //AlertManager.showAlertWithLoadingIndicator(to: self)
+        enabaleViews(false)
         
-        AuthService.shared.singIn(with: user) { [weak self] error in
+        let user = LoginUserRequest(email: email.lowercased(),
+                                    password: password)
+        
+        AuthService.shared.singIn(withUser: user) { [weak self] error in
             guard let self = self else { return }
-            
-            //AlertManager.hideAlertWithLoadingIndicator()
-            
+            self.enabaleViews(true)
             if let error = error {
-                AlertManager.show(to: self, withTitle: "Sign In Error", andMessage: error.localizedDescription, returnKey: "Dismiss")
+                AlertManager.show(to: self, withTitle: "Sign In", andMessage: error.localizedDescription, returnKey: "Dismiss")
                 return
             }
-            
+
             if let sceneDelegate = self.view.window?.windowScene?.delegate as? SceneDelegate {
                 sceneDelegate.goToRootVC()
             }
         }
     }
     
-    @objc private func appleButtonPressed(){
-        print("appleButtonPressed")
+    @objc private func facebookButtonPressed(){
+        enabaleViews(false)
     }
     
+    
     @objc private func googleButtonPressed(){
+        enabaleViews(false)
         GIDSignIn.sharedInstance.signIn(withPresenting: self) { [weak self] signInResult, error in
             guard let self = self else { return }
+            self.enabaleViews(true)
             
             if let error = error {
-                print("Google Sign In error:", error.localizedDescription)
+                AlertManager.show(to: self, withTitle: "Google Sign In", andMessage: error.localizedDescription, returnKey: "Dismiss")
                 return
             }
             
@@ -184,15 +219,13 @@ class LoginViewController: UIViewController {
             
             let accessToken = user.accessToken
             
-            let credential = GoogleAuthProvider.credential(withIDToken: idToken.tokenString, accessToken: accessToken.tokenString)
-            
-            AuthService.shared.otheProviderSignIn(credential: credential) { success, error in
+            AuthService.shared.signIn(withProvidere: .google(idToken: idToken.tokenString, accessToken: accessToken.tokenString)) { signInSuccess, error in
                 if let error = error {
-                    print(error)
+                    AlertManager.show(to: self, withTitle: "Google Sign In", andMessage: error.localizedDescription, returnKey: "Dismiss")
                     return
                 }
                 
-                if success {
+                if signInSuccess {
                     if let sceneDelegate = self.view.window?.windowScene?.delegate as? SceneDelegate {
                         sceneDelegate.goToRootVC()
                     }
@@ -202,8 +235,7 @@ class LoginViewController: UIViewController {
     }
     
     @objc private func createAccountButtonPressed(){
-        let registerVC = RegisterViewController()
-        self.navigationController?.pushViewController(registerVC, animated: true)
+        self.navigationController?.pushViewController(RegisterViewController(), animated: true)
     }
 }
 
@@ -212,20 +244,22 @@ class LoginViewController: UIViewController {
 extension LoginViewController: LoginButtonDelegate{
     func loginButton(_ loginButton: FBLoginButton, didCompleteWith result: LoginManagerLoginResult?, error: Error?) {
         if let error = error {
-            print("Facebook SignIn error:", error)
+            AlertManager.show(to: self, withTitle: "Facebook Login", andMessage: error.localizedDescription, returnKey: "Dismiss")
             return
         }
         
         guard let accessToken = result?.token else { return }
-        let credential = FacebookAuthProvider.credential(withAccessToken: accessToken.tokenString)
         
-        AuthService.shared.otheProviderSignIn(credential: credential) { success, error in
+        AuthService.shared.signIn(withProvidere: .facebook(accessToken: accessToken.tokenString)) { [weak self] signInSuccess, error in
+            guard let self = self else { return }
+            self.enabaleViews(true)
+            
             if let error = error {
-                print(error)
+                AlertManager.show(to: self, withTitle: "Facebook Login", andMessage: error.localizedDescription, returnKey: "Dismiss")
                 return
             }
 
-            if success {
+            if signInSuccess {
                 if let sceneDelegate = self.view.window?.windowScene?.delegate as? SceneDelegate {
                     sceneDelegate.goToRootVC()
                 }
@@ -234,5 +268,6 @@ extension LoginViewController: LoginButtonDelegate{
     }
     
     func loginButtonDidLogOut(_ loginButton: FBLoginButton) {
+        print("Logout")
     }
 }

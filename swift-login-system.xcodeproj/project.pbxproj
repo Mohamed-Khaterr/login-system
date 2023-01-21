@@ -69,6 +69,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0110B583297AF01600ADC5ED /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				01CEBD0629777F2F00974CA5 /* AuthService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
 		0117B702297625730051F049 = {
 			isa = PBXGroup;
 			children = (
@@ -91,9 +99,9 @@
 			isa = PBXGroup;
 			children = (
 				01DA4D5D2978E6B000ED1BD8 /* swift-login-system.entitlements */,
-				01CEBD0629777F2F00974CA5 /* AuthService.swift */,
 				01DA4D592978C42800ED1BD8 /* AlertManager.swift */,
 				01DA4D572978B92500ED1BD8 /* Validator.swift */,
+				0110B583297AF01600ADC5ED /* Services */,
 				0117B722297626040051F049 /* Resources */,
 				01CEBD082977831100974CA5 /* Model */,
 				0117B723297626380051F049 /* View */,
