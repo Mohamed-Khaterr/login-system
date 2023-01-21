@@ -21,6 +21,7 @@ class CustomTextField: UITextField {
     init(textFieldType: CustomTextFieldType){
         self.textFieldType = textFieldType
         super.init(frame: .zero)
+        translatesAutoresizingMaskIntoConstraints = false
         setupTextField()
     }
     
@@ -29,6 +30,7 @@ class CustomTextField: UITextField {
     }
     
     private func setupTextField() {
+        self.translatesAutoresizingMaskIntoConstraints = false
         self.backgroundColor = .secondarySystemBackground
         self.layer.cornerRadius = 10
         self.autocorrectionType = .no
