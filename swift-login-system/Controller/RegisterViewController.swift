@@ -10,8 +10,20 @@ import UIKit
 class RegisterViewController: UIViewController {
     
     // MARK: - UI Components
-    private let headerView = AuthHeaderView(title: "Sign Up", subTitle: "Create your account")
+    private let scrollView: UIScrollView = {
+        let scrollView = UIScrollView()
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.showsVerticalScrollIndicator = false
+        return scrollView
+    }()
     
+    private let containerView: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
+    private let headerView = AuthHeaderView(title: "Sign Up", subTitle: "Create your account")
     private let nameTextField = CustomTextField(textFieldType: .name)
     private let usernameTextField = CustomTextField(textFieldType: .username)
     private let emailTextField = CustomTextField(textFieldType: .email)
@@ -19,6 +31,7 @@ class RegisterViewController: UIViewController {
     
     private let loadingIndicator: UIActivityIndicatorView = {
         let activityIndicator = UIActivityIndicatorView()
+        activityIndicator.translatesAutoresizingMaskIntoConstraints = false
         activityIndicator.color = .label
         activityIndicator.style = .medium
         activityIndicator.hidesWhenStopped = true
@@ -26,7 +39,6 @@ class RegisterViewController: UIViewController {
     }()
     
     private let signUpButton = CustomButton(title: "Sign Up", hasBackground: true, fontSize: .medium)
-    
     private let termsTextView: UITextView = {
         // Make text with Links
         let attributedString = NSMutableAttributedString(string: "By creating an account you agree to our Terms & Conditions and you acknowledge that you have read our Privacy Policy.")
@@ -35,6 +47,7 @@ class RegisterViewController: UIViewController {
         attributedString.addAttribute(.link, value: "https://policies.google.com/privacy?h1=en", range: (attributedString.string as NSString).range(of: "Privacy Policy"))
         
         let textView = UITextView()
+        textView.translatesAutoresizingMaskIntoConstraints = false
         textView.backgroundColor = .clear
         textView.textColor = .label
         textView.isSelectable = true
@@ -70,15 +83,21 @@ class RegisterViewController: UIViewController {
     private func setupUI(){
         self.view.backgroundColor = .systemBackground
         
-        self.view.addSubview(headerView)
-        self.view.addSubview(nameTextField)
-        self.view.addSubview(usernameTextField)
-        self.view.addSubview(emailTextField)
-        self.view.addSubview(passwordTextField)
-        self.view.addSubview(loadingIndicator)
-        self.view.addSubview(signUpButton)
-        self.view.addSubview(termsTextView)
-        self.view.addSubview(signInButton)
+        self.view.addSubview(scrollView)
+        scrollView.addSubview(containerView)
+        containerView.addSubview(headerView)
+        containerView.addSubview(nameTextField)
+        containerView.addSubview(usernameTextField)
+        containerView.addSubview(emailTextField)
+        containerView.addSubview(passwordTextField)
+        containerView.addSubview(loadingIndicator)
+        containerView.addSubview(signUpButton)
+        containerView.addSubview(termsTextView)
+        containerView.addSubview(signInButton)
+        
+        
+        containerView.addSubview(headerView)
+        containerView.addSubview(nameTextField)
         
         // translatesAutoresizingMaskIntoConstraints: to set my constraints
         // default (true) is fully specify the view’s size and position
@@ -88,60 +107,73 @@ class RegisterViewController: UIViewController {
         usernameTextField.translatesAutoresizingMaskIntoConstraints = false
         emailTextField.translatesAutoresizingMaskIntoConstraints = false
         passwordTextField.translatesAutoresizingMaskIntoConstraints = false
-        loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
         signUpButton.translatesAutoresizingMaskIntoConstraints = false
-        termsTextView.translatesAutoresizingMaskIntoConstraints = false
         signInButton.translatesAutoresizingMaskIntoConstraints = false
         
+        
         NSLayoutConstraint.activate([
-            // Header View
-            headerView.topAnchor.constraint(equalTo: self.view.layoutMarginsGuide.topAnchor, constant: 30),
-            headerView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
-            headerView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
-            headerView.heightAnchor.constraint(equalToConstant:    180),
+            // Scroll View
+            scrollView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
+            scrollView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor),
             
+            // Container View
+            containerView.topAnchor.constraint(equalTo: scrollView.topAnchor),
+            containerView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
+            containerView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
+            containerView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
+            containerView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
+            
+            // Header View
+            headerView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 30),
+            headerView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+            headerView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
+            headerView.heightAnchor.constraint(equalToConstant: 180),
+
             // Name TextField
             nameTextField.topAnchor.constraint(equalTo: headerView.bottomAnchor, constant: 16),
             nameTextField.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
             nameTextField.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.8),
             nameTextField.heightAnchor.constraint(equalToConstant: 55),
-            
+
             // Username TextField
             usernameTextField.topAnchor.constraint(equalTo: nameTextField.bottomAnchor, constant: 16),
-            usernameTextField.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
-            usernameTextField.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.8),
+            usernameTextField.centerXAnchor.constraint(equalTo: containerView.centerXAnchor),
+            usernameTextField.widthAnchor.constraint(equalTo: containerView.widthAnchor, multiplier: 0.8),
             usernameTextField.heightAnchor.constraint(equalToConstant: 55),
-            
+
             // Email TextField
             emailTextField.topAnchor.constraint(equalTo: usernameTextField.bottomAnchor, constant: 16),
-            emailTextField.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
-            emailTextField.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.8),
+            emailTextField.centerXAnchor.constraint(equalTo: containerView.centerXAnchor),
+            emailTextField.widthAnchor.constraint(equalTo: containerView.widthAnchor, multiplier: 0.8),
             emailTextField.heightAnchor.constraint(equalToConstant: 55),
-            
+
             // Password TextField
             passwordTextField.topAnchor.constraint(equalTo: emailTextField.bottomAnchor, constant: 16),
-            passwordTextField.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
-            passwordTextField.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.8),
+            passwordTextField.centerXAnchor.constraint(equalTo: containerView.centerXAnchor),
+            passwordTextField.widthAnchor.constraint(equalTo: containerView.widthAnchor, multiplier: 0.8),
             passwordTextField.heightAnchor.constraint(equalToConstant: 55),
-            
+
             // Loading Indicator
             loadingIndicator.topAnchor.constraint(equalTo: passwordTextField.bottomAnchor, constant: 26),
-            loadingIndicator.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
-            
+            loadingIndicator.centerXAnchor.constraint(equalTo: containerView.centerXAnchor),
+
             // SignUp Button
             signUpButton.topAnchor.constraint(equalTo: passwordTextField.bottomAnchor, constant: 24),
-            signUpButton.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
-            signUpButton.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.8),
+            signUpButton.centerXAnchor.constraint(equalTo: containerView.centerXAnchor),
+            signUpButton.widthAnchor.constraint(equalTo: containerView.widthAnchor, multiplier: 0.8),
             signUpButton.heightAnchor.constraint(equalToConstant: 55),
-            
+
             // Terms TextView
             termsTextView.topAnchor.constraint(equalTo: signUpButton.bottomAnchor, constant: 24),
-            termsTextView.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
-            termsTextView.widthAnchor.constraint(equalTo: self.view.widthAnchor, multiplier: 0.8),
-            
+            termsTextView.centerXAnchor.constraint(equalTo: containerView.centerXAnchor),
+            termsTextView.widthAnchor.constraint(equalTo: containerView.widthAnchor, multiplier: 0.8),
+
             // SignIn Button
-            signInButton.bottomAnchor.constraint(equalTo: self.view.layoutMarginsGuide.bottomAnchor, constant: -12),
-            signInButton.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
+            signInButton.topAnchor.constraint(greaterThanOrEqualTo: termsTextView.bottomAnchor, constant: 30),
+            signInButton.centerXAnchor.constraint(equalTo: containerView.centerXAnchor),
+            signInButton.bottomAnchor.constraint(equalTo: containerView.safeAreaLayoutGuide.bottomAnchor, constant: -12),
         ])
     }
     
