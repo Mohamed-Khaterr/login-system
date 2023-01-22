@@ -37,7 +37,7 @@ class LoginController: UIViewController {
 // MARK: - LoginView Delegate
 extension LoginController: LoginViewDelegate {
     func forgotPasswordButtonPressed() {
-        navigationController?.pushViewController(ForgotPasswordViewController(), animated: true)
+        navigationController?.pushViewController(ForgotPasswordController(), animated: true)
     }
     
     func signInButtonPressed() {
@@ -112,7 +112,7 @@ extension LoginController: LoginViewDelegate {
     }
     
     func createAccountButtonPresssed() {
-        navigationController?.pushViewController(RegisterViewController(), animated: true)
+        navigationController?.pushViewController(RegisterController(), animated: true)
     }
 }
 

@@ -172,7 +172,10 @@ class AuthService {
     }
     
     public func fetchUser(completion: @escaping (Result<User, Error>) -> Void){
-        guard let userUID = Auth.auth().currentUser?.uid else { return }
+        guard let userUID = Auth.auth().currentUser?.uid else {
+            completion(.failure(NSError(domain: "Auth", code: 404, userInfo: [NSLocalizedDescriptionKey: "Not loged In"])))
+            return
+        }
         
         let db = Firestore.firestore()
         

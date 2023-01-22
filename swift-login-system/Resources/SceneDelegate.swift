@@ -27,9 +27,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     public func goToRootVC(){
         let rootVC: UIViewController!
         if AuthService.shared.isUserSignedIn() {
-            rootVC = HomeViewController()
+            rootVC = HomeController()
         }else{
-            rootVC = LoginViewController()
+            rootVC = LoginController()
         }
         
         let nav = UINavigationController(rootViewController: rootVC)

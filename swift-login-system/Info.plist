@@ -2,34 +2,28 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <!-- SDK's URL Scheme -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Allow Photo Library to choose profile image</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Allow Camera to take profile image</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>fb841917440238816</string>
-                <string>com.googleusercontent.apps.979326928336-0cq7uns25derhh83o78sefmt30dtpotc</string>
+				<string>com.googleusercontent.apps.979326928336-0cq7uns25derhh83o78sefmt30dtpotc</string>
 			</array>
 		</dict>
 	</array>
-    <!-- END SDK's URL Scheme -->
-    
-    <!-- Google Client -->
-    <key>GIDClientID</key>
-    <string>979326928336-0cq7uns25derhh83o78sefmt30dtpotc.apps.googleusercontent.com</string>
-    <!-- END Google Client -->
-    
-    <!-- Facebook Clien -->
+	<key>GIDClientID</key>
+	<string>979326928336-0cq7uns25derhh83o78sefmt30dtpotc.apps.googleusercontent.com</string>
 	<key>FacebookAppID</key>
 	<string>841917440238816</string>
 	<key>FacebookClientToken</key>
 	<string>10e8d60b07ae691459f663bba35d50dd</string>
 	<key>FacebookDisplayName</key>
 	<string>Login System</string>
-    <!-- END Facebook Clien -->
-    
-    
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

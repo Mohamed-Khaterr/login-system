@@ -98,6 +98,10 @@ class LoginView: UIView {
         self.facebookSignInButton.delegate = facebookDeleage
         self.facebookSignInButton.permissions = facebookPermissions
         
+        [emailTextField, passwordTextField].forEach { textField in
+            textField.delegate = self
+        }
+        
         addSubviews()
         layoutUI()
     }
@@ -231,7 +235,7 @@ class LoginView: UIView {
     
     private func setupCreateAccountButtonConstraints(){
         NSLayoutConstraint.activate([
-            createAccountButton.topAnchor.constraint(greaterThanOrEqualTo: googleSignInButton.bottomAnchor, constant: 40),
+            createAccountButton.topAnchor.constraint(greaterThanOrEqualTo: googleSignInButton.bottomAnchor, constant: 30),
             createAccountButton.centerXAnchor.constraint(equalTo: containerView.centerXAnchor),
             createAccountButton.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -12),
         ])
@@ -268,5 +272,23 @@ class LoginView: UIView {
                 }
             }
         }
+    }
+}
+
+
+
+// MARK: - UITextField Delegate
+extension LoginView: UITextFieldDelegate {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        switch textField {
+        case emailTextField:
+            passwordTextField.becomeFirstResponder()
+            
+        case passwordTextField:
+            textField.endEditing(true)
+            
+        default: break
+        }
+        return true
     }
 }
